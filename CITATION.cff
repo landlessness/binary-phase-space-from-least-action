@@ -7,7 +7,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-1803-3172"
     email: bmulloy@umich.edu
     affiliation: "Independent Researcher, Corktown, Detroit, Michigan, USA"
-version: "0.1.0"
+version: "0.1.1"
 date-released: "2026-05-26"
 license: MIT
 repository-code: "https://github.com/landlessness/binary-phase-space-from-least-action"
