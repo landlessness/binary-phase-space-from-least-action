@@ -38,12 +38,10 @@ pdflatex main
 
 This release is archived on Zenodo.
 
-> **TODO:** add the Zenodo concept DOI here after the first release.
-
-Suggested citation (update once a DOI exists):
+Suggested citation:
 
 > Mulloy, B. S. (2026). *Code and figures for "Binary Phase Space from Least
-> Action"*. Zenodo. https://doi.org/10.5281/zenodo.XXXXXXXX
+> Action"*. Zenodo. https://doi.org/10.5281/zenodo.20402375
 
 A BibTeX entry is available from the Zenodo deposit page, or from the
 "Cite this repository" button on GitHub (populated from `CITATION.cff`).
