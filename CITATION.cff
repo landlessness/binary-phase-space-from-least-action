@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Code and figures for \"Binary Phase Space from Least Action\""
+authors:
+  - family-names: Mulloy
+    given-names: Brian S.
+    orcid: "https://orcid.org/0000-0002-1803-3172"
+    email: bmulloy@umich.edu
+    affiliation: "Independent Researcher, Corktown, Detroit, Michigan, USA"
+version: "0.1.0"
+date-released: "2026-05-26"
+license: MIT
+repository-code: "https://github.com/landlessness/binary-phase-space-from-least-action"
+type: software
+keywords:
+  - phase-space quantum mechanics
+  - least action
+  - binary partition
+# TODO: add the Zenodo concept DOI after the first release.
+# Do NOT reuse the Wigner paper's DOI (10.5281/zenodo.20279094).
+# identifiers:
+#   - type: doi
+#     value: 10.5281/zenodo.XXXXXXXX
+#     description: "Zenodo concept DOI (all versions)"
+preferred-citation:
+  type: article
+  title: "Binary Phase Space from Least Action"
+  authors:
+    - family-names: Mulloy
+      given-names: Brian S.
+      orcid: "https://orcid.org/0000-0002-1803-3172"
+  year: 2026
