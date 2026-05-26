@@ -9,7 +9,7 @@ authors:
     affiliation: "Independent Researcher, Corktown, Detroit, Michigan, USA"
 version: "0.1.1"
 date-released: "2026-05-26"
-license: MIT
+license: [MIT, CC-BY-4.0]
 repository-code: "https://github.com/landlessness/binary-phase-space-from-least-action"
 type: software
 keywords:
@@ -21,10 +21,11 @@ identifiers:
     value: 10.5281/zenodo.20402375
     description: "Zenodo concept DOI (all versions)"
 preferred-citation:
-  type: article
+  type: unpublished
   title: "Binary Phase Space from Least Action"
   authors:
     - family-names: Mulloy
       given-names: Brian S.
       orcid: "https://orcid.org/0000-0002-1803-3172"
   year: 2026
+  notes: "Manuscript in preparation."

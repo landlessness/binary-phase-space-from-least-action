@@ -46,7 +46,8 @@ Suggested citation:
 A BibTeX entry is available from the Zenodo deposit page, or from the
 "Cite this repository" button on GitHub (populated from `CITATION.cff`).
 
-For citing the paper itself, see the published manuscript.
+For citing the paper itself: the manuscript is in preparation and not yet
+publicly available. Until then, please cite the archived code and figures above.
 
 ## License
 
