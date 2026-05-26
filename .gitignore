@@ -1,0 +1,61 @@
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# uv
+# (uv.lock is committed; .venv is not)
+
+# ============================================================
+# LaTeX (pdflatex / bibtex / synctex output)
+# ============================================================
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.nav
+*.snm
+*.vrb
+*Notes.bib
+tex/main.pdf
+
+# ============================================================
+# OmniGraffle
+# ============================================================
+# .graffle files are bundles on macOS — these are working files
+# you probably DO want to commit. Comment in only if you want to
+# exclude autosave or temp files:
+# *.graffle/QuickLook/
+
+# ============================================================
+# macOS
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# ============================================================
+# Editors
+# ============================================================
+.idea/
+*.swp
+*.swo
+*~
