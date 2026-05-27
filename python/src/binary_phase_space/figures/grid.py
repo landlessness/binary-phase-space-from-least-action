@@ -28,7 +28,10 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from .panels import portrait_panel, cross_section_panel, partition_panel
+from .panels import (
+    portrait_panel, cross_section_panel, partition_panel,
+    _apply_window_from_state,
+)
 from ..cross_section import compute_cross_section
 
 
@@ -134,13 +137,45 @@ def assemble_grid(
         ax_port  = fig.add_subplot(gs[i, 2])
 
         lim = _row_lim(row)
-        partition_panel(ax_part, row.A, lim=lim)
+        partition_panel(ax_part, row.A, r_orbit=row.r_orbit, lim=lim)
         cross_section_panel(ax_cross, row.A, r_orbit=row.r_orbit)
-        portrait_panel(ax_port, row.A, r_orbit=row.r_orbit)
+        portrait_panel(ax_port, row.A, r_orbit=row.r_orbit, state=row.state)
 
-        # Shared x-window per row.
-        ax_port.set_xlim(-lim, lim); ax_port.set_ylim(-lim, lim)
-        ax_cross.set_xlim(-lim, lim)
+        # Window + ticks. For state-based rows, mirror the Wigner code's
+        # _apply_window (same limits, same ticks the Wigner figure uses
+        # for this state) -- but expand limits if our hard-edged partition
+        # data exceeds the Wigner window. For harmonic rows, the panel's
+        # own symmetric lim/ticks stand.
+        if row.state is not None:
+            from ._portrait import portrait_field
+            field, p_lim, support, extent = portrait_field(
+                row.A, r_orbit=row.r_orbit, n_img=1000
+            )
+            # Data extent in physical (x, p) coords (field spans [-p_lim, +p_lim]
+            # symmetrically about the orbit center, which is at x=0, p=0).
+            n = field.shape[0]; mid = n // 2
+            axis = np.linspace(-p_lim, p_lim, n)
+            nz_xrow = np.where(field[:, mid] > 0)[0]
+            nz_pcol = np.where(field[mid, :] > 0)[0]
+            data_x = (float(axis[nz_xrow[0]]), float(axis[nz_xrow[-1]])) if len(nz_xrow) else None
+            data_p = (float(axis[nz_pcol[0]]), float(axis[nz_pcol[-1]])) if len(nz_pcol) else None
+
+            _apply_window_from_state(ax_port,  row.state, expand_x=data_x, expand_p=data_p)
+            _apply_window_from_state(ax_cross, row.state, expand_x=data_x, expand_p=None)
+            # Partition column: per the cross-row rule, its x range must
+            # equal the cross-section x range, and its y range must equal
+            # its own x range. Apply the same Wigner window to x, then
+            # mirror it onto y with the same tick values.
+            _apply_window_from_state(ax_part,  row.state, expand_x=data_x, expand_p=None)
+            x0, x1 = ax_part.get_xlim()
+            ax_part.set_ylim(x0, x1)
+            xt = ax_part.get_xticks()
+            ax_part.set_yticks(list(xt))
+            ax_part.set_yticklabels([f"{t:.1f}" for t in xt])
+        else:
+            # Harmonic: shared symmetric x-window per row.
+            ax_port.set_xlim(-lim, lim); ax_port.set_ylim(-lim, lim)
+            ax_cross.set_xlim(-lim, lim)
 
         if i == 0:
             ax_part.set_title(column_titles[0])
