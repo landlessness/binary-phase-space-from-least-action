@@ -55,42 +55,77 @@ def portrait_panel(ax, A, *, r_orbit=None, hbar: float = 1.0, n_img: int = 1400)
         )
     ax.set_aspect("equal", adjustable="box")
 
-    # Overlays: Heisenberg cell A and quorum cell ã (harmonic: circles).
-    p = np.sqrt(A)
-    heis = HeisenbergCell(Delta_x=p, Delta_p=p, center=(0.0, 0.0))
+    # Heisenberg cell A and quorum cell ã. The orbit boundary IS the cell
+    # ellipse, so the cell's principal radii come from probing r_orbit at
+    # theta=0 (Dx) and theta=pi/2 (Dp). For the QHO (r_orbit=None,
+    # circular orbit) Dx = Dp = sqrt(A), recovering the harmonic circles.
+    if r_orbit is None:
+        Dx = Dp = float(np.sqrt(A))
+    else:
+        Dx = float(r_orbit(0.0))
+        Dp = float(r_orbit(np.pi / 2))
+    heis = HeisenbergCell(Delta_x=Dx, Delta_p=Dp, center=(0.0, 0.0))
     qc = quorum_cell(heis, hbar=hbar)
     ax.add_patch(heisenberg_cell_patch(heis))
     ax.add_patch(quorum_cell_patch(qc))
 
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
-    _root_ticks(ax, A, both=True)
+    _axis_ticks(ax, x_lim=lim, y_lim=lim)
 
 
-def cross_section_panel(ax, A):
-    """Draw the 1-D position-density cross-section as a skyline step."""
-    cs = compute_cross_section(A)
-    w = cs.bin_width
-    cq, pct = cs.coordinate, cs.density
-    step_x = np.concatenate(
-        [[cq[0] - w / 2], np.repeat(cq, 2) + np.tile([-w / 2, w / 2], len(cq)), [cq[-1] + w / 2]]
-    )
-    step_y = np.concatenate([[0.0], np.repeat(pct, 2), [0.0]])
-    ax.fill(step_x, step_y, color=FILL, alpha=0.85, lw=0)
-    ax.plot(step_x, step_y, color="black", lw=LINEWIDTH)
-    lim = np.sqrt(A) * 1.15
+def cross_section_panel(ax, A, *, r_orbit=None, n_img: int = 1400):
+    """Draw the 1-D cross-section as the portrait sliced at p = 0.
+
+    This is the uniform construction used across every row of the figure:
+    the cross-section column is always the portrait of the same row,
+    sampled along the horizontal axis (p = 0). Not a marginal, not an
+    independent histogram -- one consistent operation for all states,
+    matching the Wigner paper's W(x, 0) convention.
+
+    For the harmonic case (r_orbit = circle of radius sqrt(A)) this
+    slice equals compute_cross_section(A) to floating point, since the
+    radial profile and the p=0 slice agree on a circle. For elliptical
+    or anharmonic orbits the slice captures the orbit-stretch in the
+    x-direction.
+    """
+    field, lim, support, extent = portrait_field(A, r_orbit=r_orbit, n_img=n_img)
+    n = field.shape[0]
+    mid = n // 2
+    xs = np.linspace(-lim, lim, n)
+    # p = 0 corresponds to the middle row of the field (YY = 0 there).
+    # field is indexed [ix, iy] so the p=0 slice is field[:, mid].
+    slice_y = field[:, mid]
+
+    # Render as a filled skyline at the raster resolution. The discrete
+    # bins show as flat plateaus by construction (portrait_field uses
+    # nearest-bin assignment and interpolation='nearest').
+    ax.fill_between(xs, slice_y, 0, where=(slice_y > 0),
+                    color=FILL, alpha=0.85, linewidth=0)
+    ax.plot(xs, slice_y, color="black", lw=LINEWIDTH)
     ax.set_xlim(-lim, lim)
-    ax.set_ylim(0, pct.max() * 1.15)
-    _root_ticks(ax, A, both=False)
+    ymax = float(slice_y.max()) if slice_y.max() > 0 else 1.0
+    ax.set_ylim(0, ymax * 1.15)
+    _axis_ticks(ax, x_lim=lim)  # density y-axis left to matplotlib default
 
 
-def _root_ticks(ax, A, *, both: bool):
-    r = np.sqrt(A)
-    ax.set_xticks([-r, 0, r])
-    ax.set_xticklabels([f"{-r:.1f}", "0.0", f"{r:.1f}"])
-    if both:
-        ax.set_yticks([-r, 0, r])
-        ax.set_yticklabels([f"{-r:.1f}", "0.0", f"{r:.1f}"])
+def _axis_ticks(ax, *, x_lim: float, y_lim: float | None = None):
+    """Place 3 nice symmetric ticks on the x (and optionally y) axis,
+    spanning the actual axis extent rather than a fixed ±sqrt(A) anchor.
+
+    Uses nice_symmetric_ticks from the Wigner code's ticks module --
+    same 1-2-5 mantissa step picking as the Wigner figures, so harmonic
+    rows (lim ≈ 1.05*sqrt(A)) get the same ticks as before and
+    non-harmonic rows get ticks that span their actual window.
+    """
+    from ..ticks import nice_symmetric_ticks
+    xt = nice_symmetric_ticks(x_lim, target_count=3)
+    ax.set_xticks(list(xt))
+    ax.set_xticklabels([f"{t:.1f}" for t in xt])
+    if y_lim is not None:
+        yt = nice_symmetric_ticks(y_lim, target_count=3)
+        ax.set_yticks(list(yt))
+        ax.set_yticklabels([f"{t:.1f}" for t in yt])
 
 
 # ---------------------------------------------------------------------------
@@ -124,4 +159,4 @@ def partition_panel(ax, A, *, lim=None):
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
-    _root_ticks(ax, A, both=True)
+    _axis_ticks(ax, x_lim=lim, y_lim=lim)
