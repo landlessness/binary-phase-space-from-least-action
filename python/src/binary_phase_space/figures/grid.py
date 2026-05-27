@@ -45,7 +45,7 @@ def assemble_grid(
     margin_bottom: float = 0.40,
     margin_left: float = 1.35,
     margin_right: float = 0.15,
-    column_titles=("Partition", "Portrait", "Cross-Section"),
+    column_titles=("Partition", "Cross-Section", "Portrait"),
 ) -> Figure:
     """Build the 3-column figure across the given action levels."""
     n_rows = len(A_values)
@@ -67,8 +67,8 @@ def assemble_grid(
 
     for i, A in enumerate(A_values):
         ax_part  = fig.add_subplot(gs[i, 0])
-        ax_port  = fig.add_subplot(gs[i, 1])
-        ax_cross = fig.add_subplot(gs[i, 2])
+        ax_cross = fig.add_subplot(gs[i, 1])
+        ax_port  = fig.add_subplot(gs[i, 2])
 
         lim = _row_lim(A)
         partition_panel(ax_part, A, lim=lim)
@@ -81,10 +81,11 @@ def assemble_grid(
 
         if i == 0:
             ax_part.set_title(column_titles[0])
-            ax_port.set_title(column_titles[1])
-            ax_cross.set_title(column_titles[2])
+            ax_cross.set_title(column_titles[1])
+            ax_port.set_title(column_titles[2])
 
         ax_part.set_ylabel(r"$\tilde{x} / x_0$")
+        ax_cross.set_ylabel(r"$\rho(x, 0)$")
         ax_port.set_ylabel(r"$p / p_0$")
 
         if i == n_rows - 1:
