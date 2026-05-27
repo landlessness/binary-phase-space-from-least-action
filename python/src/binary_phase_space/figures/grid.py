@@ -32,7 +32,7 @@ def assemble_grid(
     margin_bottom: float = 0.40,
     margin_left: float = 1.35,
     margin_right: float = 0.15,
-    column_titles=("Phase-Space Portrait", "Position Density"),
+    column_titles=("Partition Portrait", "Partition Cross-Section"),
 ) -> Figure:
     """Build the 2-column figure across the given action levels."""
     n_rows = len(A_values)
