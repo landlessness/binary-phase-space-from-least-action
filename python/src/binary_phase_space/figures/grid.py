@@ -1,12 +1,14 @@
-"""Assemble the binary phase-space figure as a 2-column grid.
+"""Assemble the binary phase-space figure as a 3-column grid.
 
-Mirrors the Wigner package's figures/grid.py: fixed per-panel boxes,
-figure size derived from them, aspect-equal heatmaps. Row labels are
-placed in the left margin rotated 90 degrees, matching the Wigner
-manuscript's leftmost-column row metadata.
+Mirrors the legacy plot_encoding_grid.R layout in spirit:
+  Col 1: Partition. The (blob center -> selected microstate) staircase
+         with faint downward erasure scars.
+  Col 2: Portrait. The 2-D phase-space portrait with cell overlays.
+  Col 3: Cross-Section. The 1-D position-density skyline.
 
-Column 1: phase-space portrait with cell overlays.
-Column 2: position-density cross-section.
+All three columns share the same x-window (lim) so they align row-wise.
+Row labels are placed in the left margin rotated 90 degrees, matching
+the Wigner manuscript's leftmost-column metadata.
 """
 
 from __future__ import annotations
@@ -14,17 +16,28 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from .panels import portrait_panel, cross_section_panel
+from .panels import portrait_panel, cross_section_panel, partition_panel
+from ..cross_section import compute_cross_section
+
+
+def _row_lim(A):
+    """Shared per-row x-limit. Matches the R convention plot_lim_x =
+    max(max_ax, outer_bin_edge) * 1.05 so all three columns align."""
+    cs = compute_cross_section(A)
+    max_ax = float(np.sqrt(A))
+    outer = float(cs.coordinate[-1] + cs.bin_width / 2.0)
+    return max(max_ax, outer) * 1.05
 
 
 def assemble_grid(
     A_values,
     *,
     row_labels=None,
-    panel_width: float = 1.7,
+    panel_width: float = 1.5,
     panel_height: float = 1.5,
     h_pad: float = 0.35,
     w_pad: float = 0.55,
@@ -32,11 +45,11 @@ def assemble_grid(
     margin_bottom: float = 0.40,
     margin_left: float = 1.35,
     margin_right: float = 0.15,
-    column_titles=("Partition Portrait", "Partition Cross-Section"),
+    column_titles=("Partition", "Portrait", "Cross-Section"),
 ) -> Figure:
-    """Build the 2-column figure across the given action levels."""
+    """Build the 3-column figure across the given action levels."""
     n_rows = len(A_values)
-    ncols = 2
+    ncols = 3
 
     if row_labels is not None and len(row_labels) != n_rows:
         raise ValueError(f"row_labels has {len(row_labels)} entries, expected {n_rows}")
@@ -53,24 +66,34 @@ def assemble_grid(
     )
 
     for i, A in enumerate(A_values):
-        ax_port = fig.add_subplot(gs[i, 0])
-        ax_cross = fig.add_subplot(gs[i, 1])
+        ax_part  = fig.add_subplot(gs[i, 0])
+        ax_port  = fig.add_subplot(gs[i, 1])
+        ax_cross = fig.add_subplot(gs[i, 2])
 
+        lim = _row_lim(A)
+        partition_panel(ax_part, A, lim=lim)
         portrait_panel(ax_port, A)
         cross_section_panel(ax_cross, A)
 
-        if i == 0:
-            ax_port.set_title(column_titles[0])
-            ax_cross.set_title(column_titles[1])
+        # bring portrait/cross-section windows into alignment with lim
+        ax_port.set_xlim(-lim, lim); ax_port.set_ylim(-lim, lim)
+        ax_cross.set_xlim(-lim, lim)
 
+        if i == 0:
+            ax_part.set_title(column_titles[0])
+            ax_port.set_title(column_titles[1])
+            ax_cross.set_title(column_titles[2])
+
+        ax_part.set_ylabel(r"$\tilde{x} / x_0$")
         ax_port.set_ylabel(r"$p / p_0$")
 
         if i == n_rows - 1:
+            ax_part.set_xlabel(r"$x_\mu / x_0$")
             ax_port.set_xlabel(r"$x / x_0$")
             ax_cross.set_xlabel(r"$x / x_0$")
 
         if row_labels is not None:
-            pos = ax_port.get_position()
+            pos = ax_part.get_position()
             y_center = 0.5 * (pos.y0 + pos.y1)
             x_label = pos.x0 - 1.0 * w_pad / fig_width
             fig.text(

@@ -91,3 +91,37 @@ def _root_ticks(ax, A, *, both: bool):
     if both:
         ax.set_yticks([-r, 0, r])
         ax.set_yticklabels([f"{-r:.1f}", "0.0", f"{r:.1f}"])
+
+
+# ---------------------------------------------------------------------------
+# Partition panel (new leftmost column)
+# ---------------------------------------------------------------------------
+
+from ._partition import compute_partition  # noqa: E402
+
+
+def partition_panel(ax, A, *, lim=None):
+    """Draw the (blob center -> selected microstate) panel with downward
+    erasure scars and a black dot at each landed point.
+
+    Matches the middle column of plot_encoding_grid.R: faint gray scars
+    from (q_b, q_mu) down to (q_b, q_mu - eps), and black dots at
+    (q_b, q_mu). Many centers collapse onto the same microstate, so the
+    dots form horizontal bands -- the staircase treads.
+    """
+    q_b, q_mu, eps_scaled, max_ax = compute_partition(A)
+
+    if lim is None:
+        lim = max_ax * 1.15
+
+    # Faint downward scars (vertical line per center, from landing to
+    # landing - eps). The R uses linewidth=0.2, alpha=0.05, color gray90.
+    ax.vlines(q_b, q_mu - eps_scaled, q_mu, colors="0.85", alpha=0.05, linewidth=0.2)
+    # Black landing dots.
+    ax.plot(q_b, q_mu, marker="o", linestyle="none", color="black",
+            markersize=0.6, markeredgewidth=0)
+
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    _root_ticks(ax, A, both=True)
